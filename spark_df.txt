@@ -1,0 +1,252 @@
+1). Normal Text file into an dataframe.
+
+=> 
+
+case class emp(id:Int, name:String, sal:Int, dept:String)
+
+=> 
+
+val emp_data = sc.textFile("file:///home/cloudera/Desktop/emp.txt").map(e => e.toString().split(",")).map( e => emp ( e(0).toInt, e(1), e(2).toInt, e(3) ) ).toDF()
+
+=>
+
+emp_data.registerTempTable("emp")
+
+=>
+
+sqlContext.sql("desc emp").show()
+
++--------+---------+-------+
+|col_name|data_type|comment|
++--------+---------+-------+
+|      id|      int|       |
+|    name|   string|       |
+|     sal|      int|       |
+|    dept|   string|       |
++--------+---------+-------+
+
+
+=>
+
+sqlContext.sql("select * from emp").show()
+
++---+-------+-----+----+
+| id|   name|  sal|dept|
++---+-------+-----+----+
+|  1|  manju|50000|  DE|
+|  2|   ajit|40000| DBA|
+|  3| ankita|45000|  DE|
+|  4|prateek|40000|  DE|
+|  5|  seenu|35000| DBA|
++---+-------+-----+----+
+
+
+=>
+
+sqlContext.sql("select * from emp where sal > 40000").show()
+
++---+------+-----+----+
+| id|  name|  sal|dept|
++---+------+-----+----+
+|  1| manju|50000|  DE|
+|  3|ankita|45000|  DE|
++---+------+-----+----+
+
+==========================================================================
+
+2). Now we will convert a json file into a spark dataframe using spark sql context.
+
+=> Load the dataset into an rdd and convert it into a dataframe.
+
+val df_user_activity_json = sqlContext.read.json("file:///home/cloudera/Desktop/user_activity.json")
+
+// The above command will create an dataframe and stores user_activity.json data in the df_user_activity_json variable dataframe.
+
+=>
+
+Register the above dataframe into an temp table using the below command.
+
+df_user_activity_json.registerTempTable("user_activity_json")
+
+
+=> 
+
+sqlContext.sql("desc user_activity_json").show()
+
+=>
+
+sqlContext.sql("select * from user_activity_json").show()
+
+=>
+
+sqlContext.sql("select * from user_activity_json").show()
+
+
+
+2nd example:
+
+val people_json = sqlContext.read.json("file:///home/cloudera/Desktop/people.json")
+
+people_json.registerTempTable("people_json")
+
+
+=> 
+
+sqlContext.sql("desc people_json").show()
+
++--------+---------+-------+
+|col_name|data_type|comment|
++--------+---------+-------+
+|     age|   bigint|       |
+|    name|   string|       |
++--------+---------+-------+
+
+
+=>
+
+sqlContext.sql("select * from people_json").show()
+
++----+-------+
+| age|   name|
++----+-------+
+|null|Michael|
+|  30|   Andy|
+|  19| Justin|
++----+-------+
+
+
+=> 
+
+sqlContext.sql("select * from people_json where age > 19").show()
+
++---+----+
+|age|name|
++---+----+
+| 30|Andy|
++---+----+
+
+
+========================================================================
+
+3). Xml to Dataframe.
+
+=> 
+
+// Download the jar file spark-xml_2.10-0.2.0.jar and add in your spark shell.
+
+:cp /home/cloudera/Downloads/spark-xml_2.10-0.2.0.jar
+
+
+=>
+
+// Load the xml file and convert it into dataframe by using below command.
+
+val df = sqlContext.read.format("com.databricks.spark.xml").option("rowTag","book").load("file:///home/cloudera/Desktop/books.xml")
+
+=> 
+
+// Register to a temporary table.
+
+df.registerTempTable(""df_xml)
+
+=>
+
+sqlContext.sql("desc df_xml").show()
+
+=>
+
+sqlContext.sql("select id, price.toInt from df_xml").show()
+
+
+4). CSV to dataframe.
+
+Spark version should be 2.+ to avail this function
+
+:cp /home/cloudera/Desktop/spark-csv_2.10-0.1.jar
+
+:cp /home/cloudera/Desktop/commons-csv-1.1.jar
+
+Give the full path of jars and separate them with , instead of ;
+
+
+example syntax:
+
+spark-shell --jars spark-shell --jars fullpath\spark-csv_2.11-1.4.0.jar,fullpath\commons-csv-1.2.jar
+
+spark-shell --jars file:///home/cloudera/Desktop/spark-csv_2.10-0.1.jar
+
+val diamonds = sqlContext.read.format("com.databricks.spark.csv").option("header","true").option("inferSchema","true").load("file:///home/cloudera/Desktop/export.csv")
+
+
+
+5).
+
+
+val data = sqlContext.read.format("com.databricks.spark.avro").load("file:///home/cloudera/Desktop/episodes.avro")
+
+sqlContext.sparkContext.hadoopConfiguration.set("avro.mapred.ignore.inputs.without.extension", "true")
+
+
+Not completed do it....
+
+
+6)
+
+hive parameters
+
+Demo in normal terminal without opening hive console.
+
+hive -e 'desc final_table';
+
+
+id                  	int                 	                    
+season              	string              	                    
+winner              	string              	                    
+venue               	string              	                    
+city                	string   
+
+hive -e 'select season,winner from final_table limit 5';
+
+
+2008	Royal Challengers Bangalore
+2008	Deccan Chargers
+2008	Mumbai Indians
+2008	Mumbai Indians
+2008	Mumbai Indians
+
+The above is executing hive command from normal console.
+
+Now let us see how to execute direct file in a normal console which consists of hive commands.
+
+Create a file in Desktop with the name select_final_table_2.hql;
+
+select season,winner from final_table limit 2;
+
+cd Desktop
+
+Then execute the below command to see the result
+
+hive -f 'select_final_table_2.hql';
+
+2008	Royal Challengers Bangalore
+2008	Deccan Chargers
+
+Time taken: 6.627 seconds, Fetched: 2 row(s)
+
+Now we will pass parameter with the above hql script file.
+
+hive_param.hql
+
+select * from ${hiveconf:tablename} where season>${hiveconf:no_of_employees};
+
+============
+set season=2009;
+
+select * from final_table where season=${hiveconf:year};
+
+
+set table=final_table;
+
+
+select * from ${hiveconf:table} wehre season={hiveconf:year};
+

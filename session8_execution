@@ -1,0 +1,66 @@
+Session 8 Todo Hive
+
+1. Start the hive shell
+
+hive
+
+2. 
+
+create database session8todo;
+
+
+3.
+
+use session8todo;
+
+4. Now create an internal table by the name customer as follows :-
+
+CREATE TABLE CUSTOMER( custid INT, fname STRING, lname STRING, age INT, profession STRING) row format delimited fields terminated by ',';
+
+
+5. Load this table with the following command
+
+load data local inpath '/home/cloudera/Desktop/datasets/hive_session_to_do/custs.txt' into table customer;
+
+
+select * from customer;
+
+101,Amitabh,Bacchan,65,Actor
+102,Sharukh,Khan,45,Doctor
+103,Akshay,Kumar,38,Dentist
+104,Anubahv,kumar,58,Business
+105,Pawan,Trivedi,34,service
+106,Aamir,Null,42,scientest
+107,Salman,Khan,43,Surgen
+108,Ranbir,Kapoor,26,Industrialist
+
+6. Now create the another internal table by the name transaction as follows :
+
+CREATE TABLE TRANSACTIONS ( txnno INT, txndate STRING, custno INT, amount DOUBLE, category STRING, product STRING, city STRING, state STRING, spendby STRING) row format delimited fields terminated by ',';
+
+
+7. Load this table with the following command
+
+load data local inpath '/home/cloudera/Desktop/datasets/hive_session_to_do/txn.txt' into table TRANSACTIONS;
+
+select * from transactions;
+
+97834,05/02/2018,101,965,Entertainment,Movie,Pune,Maharashtra,Daughter
+98396,12/01/2018,102,239,Food,Grocery,Patna,Bihar,Self
+34908,06/01/2018,101,875,Travel,Air,Bangalore,Karnataka,Spouse
+70958,17/02/2018,104,439,Food,Restaurant,Delhi,Delhi,Wife
+09874,21/01/2018,105,509,Entertainment,Park,Kolkata,West Bengal
+94585,19/01/2018,106,629,Rent,House,Hyderabad,Telangana,Self
+45509,20/01/2018,107,953,Travel,Rail,Chennai,Tamil Nadu,Brother
+07864,01/02/2018,108,569,Rent,Parking,Goa,Goa,Wife
+
+8. Now perform the following queries on the above two tables :-
+
+SELECT COUNT(*) FROM TRANSACTIONS;
+
+select a.fname, b.amount from CUSTOMER a join TRANSACTIONS b on a.custid=b.custno;
+
+SELECT CATEGORY, SUM(amount) FROM TRANSACTIONS group by category;
+
+SELECT CATEGORY, SUM(amount) FROM TRANSACTIONS GROUP BY category
+SORT BY category DESC;
